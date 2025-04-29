@@ -20,6 +20,8 @@ def create_app():
 
     #Registering Blueprints
     from .auth import auth
+    from .route import routes
+    app.register_blueprint(routes, url_prefix="/")
     app.register_blueprint(auth, url_prefix="/")
 
     return app

@@ -1,7 +1,10 @@
 # models.py
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from werkzeug.security import generate_password_hash, check_password_hash
+
+
 
 db = SQLAlchemy()
 
@@ -22,12 +25,24 @@ class Admin(db.Model):
     
     def check_password(self, password):
         return check_password_hash(self.password, password)
+    
+    def to_dict(self) :
+        return {
+            "admin_id": self.admin_id,
+            "username": self.username,
+            "password": self.password,
+            "fullname": self.fullname,
+            "email": self.email,
+            "last_login": self.last_login,
+            "created_at": self.created_at,
+            "is_active": self.is_active
+        }
 
 class Patient(db.Model):
     __tablename__ = 'patient'
     
     patient_id = db.Column(db.Integer, primary_key=True)
-    login_id = db.Column(db.String(15), unique=True)
+    username = db.Column(db.String(15), unique=True)
     fname = db.Column(db.String(30), nullable=False)
     lname = db.Column(db.String(30), nullable=False)
     id_number = db.Column(db.String(13), unique=True, nullable=False)
@@ -53,12 +68,38 @@ class Patient(db.Model):
     def __init__(self, **kwargs):
         super(Patient, self).__init__(**kwargs)
         self.generate_login_id()
+        self.generate_patient_id()
+    
+    def to_dict(self):
+        data = {
+            "patient_id": self.patient_id,
+            "username": self.username,
+            "fname": self.fname,
+            "lname":  self.lname,
+            "id_number": self.id_number,
+            "sex": self.sex,
+            "dateOfBirth": self.date_of_birth,
+            "address": self.address,
+            "phone": self.phone,
+            "email": self.email,
+            "blood_type": self.blood_type,
+            "account_created_date": self.account_created_date,
+            "created_at": self.created_at,
+            "account_updated_at": self.updated_at
+        }
+
+        return data
+
+
+    def generate_patient_id(self):
+        lastId = db.session.query(func.max(Patient.patient_id)).scalar()
+        self.patient_id = lastId + 1 if lastId else 1
     
     def generate_login_id(self):
         if self.id_number and self.account_created_date:
             year_part = self.account_created_date.strftime('%y')
             id_part = self.id_number[6:]  # Skip first 6 digits (birthdate)
-            self.login_id = f"P{year_part}{id_part[:7]}"  # P + YY + 7 digits from ID
+            self.username = f"P{year_part}{id_part[:7]}"  # P + YY + 7 digits from ID
     
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -103,6 +144,21 @@ class Doctor(db.Model):
     records = db.relationship('PatientRecord', foreign_keys='PatientRecord.recorded_by', 
                             backref='recording_doctor', lazy=True)
     
+    def to_dict(self):
+        return {
+            "doctor_id": self.doctor_id,
+            "employee_id": self.employee_id,
+            "username": self.username,
+            "name": self.name,
+            "specialty": self.specialty,
+            "license_number": self.license_number,
+            "phone": self.phone,
+            "email": self.email,
+            "account_created_date": self.account_created_date,
+            "created_at": self.created_at,
+            "is_active": self.is_active
+        }
+
     def set_password(self, password):
         self.password = generate_password_hash(password)
     
@@ -145,12 +201,29 @@ class Appointment(db.Model):
     status = db.Column(db.String(20), nullable=False, default='Scheduled')
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+
     
     __table_args__ = (
         db.CheckConstraint("end_time > start_time", name="valid_appointment_time"),
         db.CheckConstraint("status IN ('Scheduled', 'Completed', 'Cancelled', 'No-show')", 
                          name="valid_status")
     )
+
+    def to_dict(self, doc_name=None):
+        return {
+            "appointment_id": self.appointment_id,
+            "appointment_type": self.appointment_type,
+            "doctor_id": self.doctor_id,
+            "patient_id": self.patient_id,
+            "start_time": self.start_time,
+            "end_time": self.end_time,
+            "status": self.status,
+            "notes": self.notes,
+            "created_at": self.created_at,
+            "doctor_name": doc_name
+        }
 
 class PatientTreatment(db.Model):
     __tablename__ = 'patient_treatment'
@@ -165,7 +238,7 @@ class PatientTreatment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class PatientRecord(db.Model):
-    __tablename__ = 'patient_record'
+    __tablename__ = 'patientrecord'
     
     record_id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey('patient.patient_id'), nullable=False)
@@ -181,6 +254,19 @@ class PatientRecord(db.Model):
         db.CheckConstraint("record_type IN ('Examination', 'Lab Result', 'Imaging', 'Note', 'Procedure')", 
                          name="valid_record_type"),
     )
+
+    def to_dict(self):
+        return {
+            "record_id": self.record_id,
+            "patient_id": self.patient_id,
+            "treat_id": self.treat_id,
+            "record_type": self.record_type,
+            "description": self.description,
+            "details": self.details,
+            "date_of_event": self.date_of_event,
+            "recorded_by": self.recorded_by,
+            "created_at": self.created_at
+        }
 
 class PatientAllergy(db.Model):
     __tablename__ = 'patient_allergy'
