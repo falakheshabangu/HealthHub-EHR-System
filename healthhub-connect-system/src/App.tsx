@@ -11,10 +11,16 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import Patients from "./pages/Patients";
-import Appointments from "./pages/Appointments";
-import MedicalRecords from "./pages/MedicalRecords";
-import Prescriptions from "./pages/Prescriptions";
+import Patients from "./pages/doctor/Patients";
+import Appointments from "./pages/patient/Appointments";
+import PatientMedicalRecords from "./pages/patient/MedicalRecords";
+import DoctorMedicalRecords from "./pages/doctor/MedicalRecords";
+import Prescriptions from "./pages/patient/Prescriptions";
+import DeleteUserPage from "./pages/admin/DeleteUser";
+import { useEffect } from "react";
+import AddUserPage from "./pages/admin/AddUser";
+import EditUserPage from "./pages/admin/EditUser";
+import AddRecordPage from "@/pages/doctor/AddRecord"
 
 const queryClient = new QueryClient();
 
@@ -22,6 +28,18 @@ const queryClient = new QueryClient();
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { role } = useRole();
   
+  useEffect(() => {
+    // Check if the role is set in localStorage and update context if necessary
+    const storedRole = localStorage.getItem("user_role");
+    if (storedRole && storedRole !== role) {
+      localStorage.setItem("user_role", storedRole);
+    } 
+
+    if (!role){
+      localStorage.clear();
+    }
+  }, [role])
+
   if (!role || !allowedRoles.includes(role)) {
     return <Navigate to="/login" replace />;
   }
@@ -53,10 +71,9 @@ const App = () => (
             {/* Admin Routes */}
             <Route element={<RoleBasedLayout allowedRoles={["admin"]} />}>
               <Route path="/admin/dashboard" element={<Dashboard />} />
-              <Route path="/admin/patients" element={<Patients />} />
-              <Route path="/admin/appointments" element={<Appointments />} />
-              <Route path="/admin/medical-records" element={<MedicalRecords />} />
-              <Route path="/admin/prescriptions" element={<Prescriptions />} />
+              <Route path="/admin/delete-user" element={<DeleteUserPage />} />
+              <Route path="/admin/add-user" element={<AddUserPage />} />
+              <Route path="/admin/edit-user" element={<EditUserPage />} />
             </Route>
             
             {/* Doctor Routes */}
@@ -64,22 +81,20 @@ const App = () => (
               <Route path="/doctor/dashboard" element={<Dashboard />} />
               <Route path="/doctor/patients" element={<Patients />} />
               <Route path="/doctor/appointments" element={<Appointments />} />
-              <Route path="/doctor/medical-records" element={<MedicalRecords />} />
-              <Route path="/doctor/prescriptions" element={<Prescriptions />} />
+              <Route path="/doctor/medical-records" element={<DoctorMedicalRecords />} />
+              <Route path="/doctor/add-record" element={<AddRecordPage />} />
             </Route>
             
             {/* Pharmacist Routes */}
             <Route element={<RoleBasedLayout allowedRoles={["pharmacist"]} />}>
               <Route path="/pharmacist/dashboard" element={<Dashboard />} />
-              <Route path="/pharmacist/patients" element={<Patients />} />
-              <Route path="/pharmacist/prescriptions" element={<Prescriptions />} />
             </Route>
             
             {/* Patient Routes */}
             <Route element={<RoleBasedLayout allowedRoles={["patient"]} />}>
               <Route path="/patient/dashboard" element={<Dashboard />} />
               <Route path="/patient/appointments" element={<Appointments />} />
-              <Route path="/patient/medical-records" element={<MedicalRecords />} />
+              <Route path="/patient/medical-records" element={<PatientMedicalRecords />} />
               <Route path="/patient/prescriptions" element={<Prescriptions />} />
             </Route>
             
