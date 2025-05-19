@@ -33,7 +33,6 @@ export function PatientDashboard() {
         const appointmentsData = await getAppointments();
         setAppointments(appointmentsData);
       } catch (error) {
-
         console.error("Failed to fetch appointments:", error);
         if(error.response?.status === 401) {
           toast({
@@ -41,12 +40,9 @@ export function PatientDashboard() {
             description: "Please log in again",
             variant: "destructive",
           });
-
           localStorage.clear();
           setRole(undefined)
         }
-
-        console.error("Failed to fetch appointments:", error);
         toast({
           title: "Error",
           description: "Failed to load your appointments",
@@ -87,7 +83,7 @@ export function PatientDashboard() {
           refills_remaining: item.refills_remaining || 0,
           date_prescribed: item.date_prescribed || "N/A",
           code: item.code || "N/A",
-          patient: item.patient || "Unknown", // Add the missing 'patient' property
+          patient: item.patient || "Unknown",
         }));
         setPrescriptionsData(transformedData);
       } catch (error) {
@@ -109,39 +105,63 @@ export function PatientDashboard() {
   const appointmentChartData = useMemo(() => {
     if (loading.appointments) return [];
     
-    const approvedAppointments = appointments.filter(app => app.status === 'Approved');
-    const monthCounts: Record<string, number> = {};
-    
-    // Initialize all months with 0
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const now = new Date();
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push(format(date, 'MMM'));
+    }
+
+    const monthCounts: Record<string, { month: string; appointments: number }> = {};
     months.forEach(month => {
-      monthCounts[month] = 0;
+      monthCounts[month] = { month, appointments: 0 };
     });
-    
-    // Count appointments by month
-    approvedAppointments.forEach(app => {
-      const date = new Date(app.start_time);
-      const month = format(date, 'MMM');
-      monthCounts[month]++;
-    });
-    
-    // Convert to array format for Recharts
-    return months.map(month => ({
-      month,
-      appointments: monthCounts[month]
-    }));
+
+    appointments
+      .filter(app => app.status === 'Completed')
+      .forEach(app => {
+        const month = format(new Date(app.start_time), 'MMM');
+        if (monthCounts[month]) {
+          monthCounts[month].appointments++;
+        }
+      });
+
+    return months.map(month => monthCounts[month]);
   }, [appointments, loading.appointments]);
 
-  // Function to format appointments for display
+  // Format appointments for display
   const formatAppointmentsForDisplay = () => {
-    return appointments.map((appointment, index) => ({
-      id: index + 1,
-      doctorName: appointment.doctor_name,
-      time: new Date(appointment.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      date: new Date(appointment.start_time).toLocaleDateString([], { year: 'numeric', month: 'long', day: '2-digit' }),
-      type: appointment.type,
-      status: appointment.status,
-    }));
+    return appointments
+      .filter(app => app.status === 'Scheduled')
+      .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+      .map((appointment) => {
+        const date = new Date(appointment.start_time);
+        const now = new Date();
+        const isToday = date.toDateString() === now.toDateString();
+        const isTomorrow = new Date(now.setDate(now.getDate() + 1)).toDateString() === date.toDateString();
+        
+        return {
+          id: appointment.appointment_id,
+          doctorName: appointment.doctor_name,
+          time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          date: date.toLocaleDateString([], { 
+            weekday: 'short', 
+            month: 'short', 
+            day: 'numeric',
+            year: 'numeric'
+          }),
+          dateObj: date,
+          type: appointment.type,
+          status: appointment.status,
+          isToday,
+          isTomorrow,
+          relativeDate: isToday 
+            ? 'Today' 
+            : isTomorrow 
+              ? 'Tomorrow' 
+              : format(date, 'MMM d, yyyy')
+        };
+      });
   };
 
   const upcomingAppointments = formatAppointmentsForDisplay();
@@ -154,6 +174,27 @@ export function PatientDashboard() {
   const closeRecordDetails = () => {
     setSelectedRecord(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="container py-8">
+        <div className="flex flex-col space-y-4">
+          <Skeleton className="h-10 w-1/3 mb-6" />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-32 rounded-lg" />
+            ))}
+          </div>
+          <Skeleton className="h-80 rounded-lg" />
+          <div className="grid gap-4 md:grid-cols-2">
+            <Skeleton className="h-96 rounded-lg" />
+            <Skeleton className="h-96 rounded-lg" />
+          </div>
+          <Skeleton className="h-64 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-8">
@@ -244,6 +285,7 @@ export function PatientDashboard() {
             <h1 className="text-3xl font-bold">Welcome, {patientName}</h1>
             <p className="text-muted-foreground">Here's a summary of your health information</p>
           </div>
+          
           <div className="flex space-x-2">
             <Button asChild>
               <Link to="/patient/appointments">
@@ -251,6 +293,43 @@ export function PatientDashboard() {
                 Schedule Appointment
               </Link>
             </Button>
+          </div>
+        </div>
+
+        {/* Health Summary */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-6">
+          <h2 className="font-semibold text-lg mb-2">Health Summary</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Last Checkup</p>
+              <p className="font-medium">
+                {records.length > 0 
+                  ? new Date(records[0].date).toLocaleDateString() 
+                  : 'N/A'}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Active Meds</p>
+              <p className="font-medium">
+                {prescriptionsData.filter(p => p.status === 'Active').length}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Next Appointment</p>
+              <p className="font-medium">
+                {upcomingAppointments.length > 0
+                  ? `${upcomingAppointments[0].relativeDate} at ${upcomingAppointments[0].time}`
+                  : 'None scheduled'}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Recent Records</p>
+              <p className="font-medium">
+                {records.length > 0 
+                  ? records.length + ' in last year' 
+                  : 'No records'}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -271,11 +350,18 @@ export function PatientDashboard() {
                 </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold">{appointments.length}</div>
+                  <div className="text-2xl font-bold">
+                    {upcomingAppointments.length}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    {appointments.length > 0 
-                      ? `Next on ${new Date(appointments[0].start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ${new Date(appointments[0].start_time).toLocaleDateString()}` 
-                      : "No upcoming appointments"}
+                    {upcomingAppointments.length > 0 ? (
+                      <>
+                        Next: <span className="font-medium">{upcomingAppointments[0].relativeDate}</span> at{' '}
+                        <span className="font-medium">{upcomingAppointments[0].time}</span>
+                      </>
+                    ) : (
+                      "No upcoming appointments"
+                    )}
                   </p>
                 </>
               )}
@@ -333,52 +419,89 @@ export function PatientDashboard() {
           </Card>
         </div>
 
-        {/* Approved Appointments Chart */}
+        {/* Appointment Trends Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Approved Appointments</CardTitle>
-            <CardDescription>
-              Your approved appointments by month
-            </CardDescription>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle>Appointment Trends</CardTitle>
+                <CardDescription>
+                  Your completed appointments over the last 6 months
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/patient/appointments">View All</Link>
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="h-[300px]">
             {loading.appointments ? (
               <div className="h-full flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin" />
               </div>
-            ) : (
+            ) : appointmentChartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={appointmentChartData}
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                  }}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fill: '#666' }}
+                    axisLine={{ stroke: '#ccc' }}
+                  />
+                  <YAxis 
+                    tick={{ fill: '#666' }}
+                    axisLine={{ stroke: '#ccc' }}
+                    allowDecimals={false}
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      background: 'white',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                    }}
+                  />
                   <Legend />
                   <Line
                     type="monotone"
                     dataKey="appointments"
-                    stroke="#8884d8"
-                    activeDot={{ r: 8 }}
-                    name="Approved Appointments"
+                    stroke="#4f46e5"
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                    name="Appointments"
                   />
                 </LineChart>
               </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center gap-2">
+                <Calendar className="h-8 w-8 text-gray-400" />
+                <p className="text-gray-500">No appointment data available</p>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/patient/appointments">Schedule Appointment</Link>
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>
 
         <div className="grid gap-4 md:grid-cols-2">
+          {/* Upcoming Appointments */}
           <Card>
             <CardHeader>
-              <CardTitle>Upcoming Appointments</CardTitle>
+              <div className="flex justify-between items-center">
+                <CardTitle>Upcoming Appointments</CardTitle>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/patient/appointments">
+                    <PlusSquare className="mr-2 h-4 w-4" />
+                    Schedule New
+                  </Link>
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {loading.appointments ? (
@@ -398,62 +521,94 @@ export function PatientDashboard() {
                   {upcomingAppointments.map((appointment) => (
                     <div
                       key={appointment.id}
-                      className="flex items-center space-x-4 rounded-md border p-3"
+                      className="group relative rounded-lg border p-4 hover:shadow-md transition-shadow"
                     >
-                      <div className="flex-1 space-y-1">
-                        <p className="font-medium">{appointment.doctorName}</p>
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Clock className="mr-1 h-3 w-3" />
-                          <span>{appointment.time}</span>
-                          <span className="mx-1">•</span>
-                          <span>{appointment.date}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm text-muted-foreground">
-                            {appointment.type}
-                          </p>
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            appointment.status === 'Approved' 
-                              ? 'bg-green-100 text-green-800' 
-                              : appointment.status === 'Pending' 
-                                ? 'bg-yellow-100 text-yellow-800' 
-                                : 'bg-red-100 text-red-800'
-                          }`}>
-                            {appointment.status}
+                      <div className="flex items-start gap-4">
+                        <div className="flex flex-col items-center bg-blue-50 dark:bg-blue-900/30 rounded-lg p-3 min-w-[80px]">
+                          <span className="text-sm font-medium text-blue-600 dark:text-blue-300">
+                            {appointment.isToday ? 'TODAY' : appointment.isTomorrow ? 'TOMORROW' : format(appointment.dateObj, 'EEE').toUpperCase()}
+                          </span>
+                          <span className="text-2xl font-bold">
+                            {format(appointment.dateObj, 'd')}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {format(appointment.dateObj, 'MMM')}
                           </span>
                         </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-shrink-0"
-                        >
-                          Reschedule
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          asChild
-                          className="flex-shrink-0"
-                        >
-                          <Link to={`/appointments/${appointment.id}`}>Details</Link>
-                        </Button>
+                        
+                        <div className="flex-1 space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-medium">{appointment.doctorName}</h3>
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              appointment.status === 'Scheduled' 
+                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
+                                : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
+                            }`}>
+                              {appointment.status}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-3 text-sm">
+                            <div className="flex items-center text-muted-foreground">
+                              <Clock className="mr-1.5 h-4 w-4" />
+                              <span>{appointment.time}</span>
+                            </div>
+                            <div className="flex items-center text-muted-foreground">
+                              <span>{appointment.type}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8"
+                              asChild
+                            >
+                              <Link to={`/appointments/${appointment.id}`}>
+                                Details
+                              </Link>
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8"
+                            >
+                              Reschedule
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-center py-4">No upcoming appointments found</p>
+                <div className="flex flex-col items-center justify-center py-8 gap-4">
+                  <Calendar className="h-12 w-12 text-gray-400" />
+                  <div className="text-center">
+                    <h3 className="text-lg font-medium">No upcoming appointments</h3>
+                    <p className="text-sm text-muted-foreground">
+                      You don't have any scheduled appointments yet.
+                    </p>
+                  </div>
+                  <Button asChild>
+                    <Link to="/patient/appointments">
+                      Schedule Appointment
+                    </Link>
+                  </Button>
+                </div>
               )}
-              <div className="flex justify-center mt-4">
-                <Button variant="outline" asChild>
-                  <Link to="/patient/appointments">Schedule New And View Appointments</Link>
-                </Button>
-              </div>
             </CardContent>
           </Card>
 
+          {/* Current Medications */}
           <Card>
             <CardHeader>
               <CardTitle>Current Medications</CardTitle>
@@ -511,6 +666,7 @@ export function PatientDashboard() {
           </Card>
         </div>
 
+        {/* Recent Medical Records */}
         <Card>
           <CardHeader>
             <CardTitle>Recent Medical Records</CardTitle>

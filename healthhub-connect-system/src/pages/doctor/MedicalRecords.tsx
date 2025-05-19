@@ -72,7 +72,6 @@ const MedicalRecords = () => {
       try {
         const data = await getPatientRecords("doctor");
         setMedicalRecordsData(data)
-        console.log(data)
       } catch (error) {
         console.error("Failed to fetch your records:", error);
         toast({

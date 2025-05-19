@@ -110,18 +110,28 @@ export default function EditUserPage() {
   }, [users, searchTerm, roleFilter, statusFilter]);
 
   const handleEditClick = async (user: User) => {
-    user = await getUserAccount(user.id, user.role)
-    if (user.role === 'patient') {
-      setFormData({
-        ...user,
-        // Ensure we have fname and lname even if they weren't in the original data
-        fname: user.fname || user.name?.split(' ')[0] || '',
-        lname: user.lname || user.name?.split(' ').slice(1).join(' ') || ''
+    try {
+      const fetchedUser = await getUserAccount(user.id, user.role);
+      setSelectedUser(fetchedUser); // Update selectedUser state
+      
+      if (fetchedUser.role === 'patient') {
+        setFormData({
+          ...fetchedUser,
+          fname: fetchedUser.fname || fetchedUser.name?.split(' ')[0] || '',
+          lname: fetchedUser.lname || fetchedUser.name?.split(' ').slice(1).join(' ') || ''
+        });
+      } else {
+        setFormData({ ...fetchedUser });
+      }
+      
+      setIsModalOpen(true);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load user data",
+        variant: "destructive",
       });
-    } else {
-      setFormData({ ...user });
     }
-    setIsModalOpen(true);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -382,7 +392,6 @@ export default function EditUserPage() {
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
               <span>Edit {selectedUser?.role} Account</span>
-              
             </DialogTitle>
           </DialogHeader>
           
@@ -555,59 +564,58 @@ export default function EditUserPage() {
               )}
 
               {/* Patient Edit Form */}
-                {selectedUser.role === 'patient' && (
-                <>
-                    
-                    {/* Name Fields */}
-                    <div className="space-y-2 space-x-1 col-span-1">
-                        <Label htmlFor="fname">First Name</Label>
-                        <Input
-                        id="fname"
-                        name="fname"
-                        value={formData.fname || ''}
-                        onChange={handleInputChange}
-                        required
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="lname">Last Name</Label>
-                        <Input
-                        id="lname"
-                        name="lname"
-                        value={formData.lname || ''}
-                        onChange={handleInputChange}
-                        required
-                        />
-                    </div>
+              {selectedUser?.role === 'patient' && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fname">First Name</Label>
+                    <Input
+                      id="fname"
+                      name="fname"
+                      value={formData.fname || ''}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lname">Last Name</Label>
+                    <Input
+                      id="lname"
+                      name="lname"
+                      value={formData.lname || ''}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="id_number">ID Number</Label>
-                        <Input
-                        id="id_number"
-                        name="id_number"
-                        value={formData.id_number || ''}
-                        onChange={handleInputChange}
-                        required
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="sex">Sex</Label>
-                        <Select
-                        onValueChange={(value) => handleSelectChange('sex', value)}
-                        value={formData.sex || ''}
-                        >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select sex" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="M">Male</SelectItem>
-                            <SelectItem value="F">Female</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                        </Select>
-                    </div>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="id_number">ID Number</Label>
+                    <Input
+                      id="id_number"
+                      name="id_number"
+                      value={formData.id_number || ''}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="sex">Sex</Label>
+                    <Select
+                      onValueChange={(value) => handleSelectChange('sex', value)}
+                      value={formData.sex || ''}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select sex" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="M">Male</SelectItem>
+                        <SelectItem value="F">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">

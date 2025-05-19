@@ -5,8 +5,8 @@ import { useRole } from '@/contexts/RoleContext';
 
 // Configure axios with base URL
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
-});
+  baseURL: 'http://10.5.33.175:5000/api'},
+);
 
 // Add interceptor to include auth token in requests
 api.interceptors.request.use(config => {
@@ -489,7 +489,7 @@ export const getPatientById = async (id: string) =>{
   }
 }
 
-
+//GET patients API endpoint
 export const getPatients = async () => {
   try {
     const response = await api.get(`/get_patients`);

@@ -388,7 +388,7 @@ const Appointments = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {getWeekdayOptions().map((option, index) => (
-                        <SelectItem key={option.index} value={option.value}>
+                        <SelectItem key={index} value={option.value}>
                           {option.label}
                         </SelectItem>
                       ))}

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -17,12 +16,11 @@ import { login } from "@/api/patientApi";
 import { useRole } from "@/contexts/RoleContext";
 import { useUser } from "@/contexts/UserContext"
 import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 
@@ -43,9 +41,7 @@ const Login = () => {
     setError(null);
 
     try {
-      // Call the login API with role included
       const response = await login({ username: email, password, role });
-      // Update the global role state
       setGlobalRole(role);
       setUserName(response.name);
       setUserSurname(response.surname);
@@ -55,7 +51,6 @@ const Login = () => {
         description: `Welcome to HealthHub EHR System ${role + " "+ response.name + " " + response.surname}`,
       });
       
-      // Redirect based on role
       switch (role) {
         case "admin":
           navigate("/admin/dashboard");
@@ -70,7 +65,7 @@ const Login = () => {
           navigate("/patient/dashboard");
           break;
         default:
-          navigate("/dashboard"); // Fallback route
+          navigate("/dashboard");
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -85,16 +80,15 @@ const Login = () => {
     }
   };
 
-  // Function to handle demo quick access logins
   const handleQuickAccess = (selectedRole: "admin" | "doctor" | "pharmacist" | "patient") => {
     setGlobalRole(selectedRole);
+    setRole(selectedRole);
     
     toast({
       title: `${selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)} Login`,
       description: `Logged in as ${selectedRole}`,
     });
 
-    // Redirect based on role
     switch (selectedRole) {
       case "admin":
         navigate("/admin/dashboard");
@@ -115,124 +109,183 @@ const Login = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-health-50 to-health-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            HealthHub Login
-          </CardTitle>
-          <CardDescription className="text-center">
-            Enter your credentials to access the system
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleLogin}>
-          <CardContent className="space-y-4">
-            {error && (
-              <Alert variant="destructive" className="mb-4">
-                <Info className="h-4 w-4" />
-                <AlertTitle>Login Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                placeholder="name@example.com"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+      <Tabs defaultValue="patient" className="w-full max-w-md">
+        <Card>
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">
+              HealthHub Login
+            </CardTitle>
+            <CardDescription className="text-center">
+              Select your role and enter credentials
+            </CardDescription>
+            <TabsList className="grid grid-cols-4 w-full">
+              <TabsTrigger 
+                value="patient" 
+                onClick={() => setRole("patient")}
+                className="data-[state=active]:bg-health-100 data-[state=active]:text-health-800 dark:data-[state=active]:bg-health-900/50"
+              >
+                Patient
+              </TabsTrigger>
+              <TabsTrigger 
+                value="doctor" 
+                onClick={() => setRole("doctor")}
+                className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800 dark:data-[state=active]:bg-blue-900/50"
+              >
+                Doctor
+              </TabsTrigger>
+              <TabsTrigger 
+                value="pharmacist" 
+                onClick={() => setRole("pharmacist")}
+                className="data-[state=active]:bg-purple-100 data-[state=active]:text-purple-800 dark:data-[state=active]:bg-purple-900/50"
+              >
+                Pharmacist
+              </TabsTrigger>
+              <TabsTrigger 
+                value="admin" 
+                onClick={() => setRole("admin")}
+                className="data-[state=active]:bg-gray-100 data-[state=active]:text-gray-800 dark:data-[state=active]:bg-gray-900/50"
+              >
+                Admin
+              </TabsTrigger>
+            </TabsList>
+          </CardHeader>
+          
+          <form onSubmit={handleLogin}>
+            <CardContent className="space-y-4">
+              {error && (
+                <Alert variant="destructive" className="mb-4">
+                  <Info className="h-4 w-4" />
+                  <AlertTitle>Login Error</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <TabsContent value="patient">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Patient Email</Label>
+                    <Input
+                      id="email"
+                      placeholder="patient@example.com"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="doctor">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Doctor Email</Label>
+                    <Input
+                      id="email"
+                      placeholder="doctor@example.com"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="pharmacist">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Pharmacist Email</Label>
+                    <Input
+                      id="email"
+                      placeholder="pharmacist@example.com"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="admin">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Admin Email</Label>
+                    <Input
+                      id="email"
+                      placeholder="admin@example.com"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+            </CardContent>
+            
+            <CardFooter className="flex flex-col space-y-4">
+              <Button 
+                type="submit" 
+                className="w-full bg-health-600 hover:bg-health-700" 
+                disabled={loading}
+              >
+                {loading ? "Logging in..." : "Log in"}
+              </Button>
+              <div className="text-center text-sm">
+                Don't have an account?{" "}
                 <Link
-                  to="/forgot-password"
-                  className="text-sm text-health-600 hover:text-health-700 dark:text-health-400 dark:hover:text-health-300"
+                  to="/register"
+                  className="text-health-600 hover:text-health-700 dark:text-health-400 dark:hover:text-health-300"
                 >
-                  Forgot password?
+                  Contact administrator
                 </Link>
               </div>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Select onValueChange={(value: any) => setRole(value)} defaultValue={role}>
-                <SelectTrigger id="role">
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="patient">Patient</SelectItem>
-                  <SelectItem value="doctor">Doctor</SelectItem>
-                  <SelectItem value="pharmacist">Pharmacist</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button 
-              type="submit" 
-              className="w-full bg-health-600 hover:bg-health-700" 
-              disabled={loading}
-            >
-              {loading ? "Logging in..." : "Log in"}
-            </Button>
-            <div className="text-center text-sm">
-              Don't have an account?{" "}
-              <Link
-                to="/register"
-                className="text-health-600 hover:text-health-700 dark:text-health-400 dark:hover:text-health-300"
-              >
-                Contact administrator
-              </Link>
-            </div>
-            {/* Quick access buttons for demo */}
-            <div className="border-t pt-4 space-y-2">
-              <p className="text-sm text-center text-muted-foreground">
-                Demo Quick Access
-              </p>
-              <div className="flex flex-wrap gap-2 justify-center">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleQuickAccess("admin")}
-                >
-                  Admin
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleQuickAccess("doctor")}
-                >
-                  Doctor
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleQuickAccess("pharmacist")}
-                >
-                  Pharmacist
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleQuickAccess("patient")}
-                >
-                  Patient
-                </Button>
-              </div>
-            </div>
-          </CardFooter>
-        </form>
-      </Card>
+            </CardFooter>
+          </form>
+        </Card>
+      </Tabs>
     </div>
   );
 };

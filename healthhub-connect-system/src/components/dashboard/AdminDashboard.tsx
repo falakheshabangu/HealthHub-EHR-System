@@ -1,10 +1,8 @@
-//WORK ON THE FILTER IMPLEMENTATION
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Users, PlusCircle,  Loader2,RefreshCwIcon, Search, Filter } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Users, PlusCircle, Loader2, RefreshCwIcon, Search, Filter, Printer } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
 import { getUserAccounts } from "@/api/patientApi";
 import { toast } from "@/components/ui/use-toast";
 import {
@@ -41,6 +39,7 @@ export function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const tableRef = useRef<HTMLTableElement>(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -63,25 +62,19 @@ export function AdminDashboard() {
     fetchUsers();
   }, []);
 
-  
-    const filteredUsers = users.filter(user => {
-      // Search term filter (name)
-      const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = 
+      roleFilter === "all" || 
+      user.role.toLowerCase() === roleFilter.toLowerCase();
+    const matchesStatus = 
+      statusFilter === "all" ||
+      (statusFilter === "active" && user.is_active) ||
+      (statusFilter === "inactive" && !user.is_active);
 
-      // Role filter
-      const matchesRole = 
-        roleFilter === "all" || 
-        user.role.toLowerCase() === roleFilter.toLowerCase();
+    return matchesSearch && matchesRole && matchesStatus;
+  });
 
-      // Status filter
-      const matchesStatus = 
-        statusFilter === "all" ||
-        (statusFilter === "active" && user.is_active) ||
-        (statusFilter === "inactive" && !user.is_active);
-
-      return matchesSearch && matchesRole && matchesStatus;
-    });
-    
   const handleUserClick = (user: User) => {
     setSelectedUser(user);
     setIsModalOpen(true);
@@ -93,12 +86,67 @@ export function AdminDashboard() {
     setStatusFilter("all");
   };
 
+  const handlePrint = () => {
+    if (!tableRef.current) return;
+
+    const printWindow = window.open('', '', 'width=800,height=600');
+    if (!printWindow) return;
+
+    // Get the HTML of the table
+    const tableHtml = tableRef.current.outerHTML;
+
+    // Create a print-friendly HTML document
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>User Accounts Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #333; text-align: center; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+            .status-active { background-color: #d4edda; color: #155724; }
+            .status-inactive { background-color: #f8d7da; color: #721c24; }
+            .print-header { margin-bottom: 20px; text-align: center; }
+            .print-footer { margin-top: 20px; text-align: center; font-size: 0.8em; color: #666; }
+            @media print {
+              @page { size: landscape; margin: 10mm; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-header">
+            <h1>User Accounts Report</h1>
+            <p>Generated on ${new Date().toLocaleString()}</p>
+            <p>Total Users: ${filteredUsers.length}</p>
+          </div>
+          ${tableHtml}
+          <div class="print-footer">
+            <p>HealthHub EHR System - Confidential</p>
+          </div>
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+                window.close();
+              }, 200);
+            }
+          </script>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+  };
+
   if (error) {
     return (
       <div className="container py-8 flex flex-col items-center justify-center">
         <div className="flex justify-center">
           <p className="text-red-500">Error: {error}</p><br/>
-          
         </div>
         <Button variant="outline" onClick={()=> window.location.reload()} className="mt-4 flex-col items-center justify-center">
           <span>Refresh</span>
@@ -112,6 +160,10 @@ export function AdminDashboard() {
       <div className="flex flex-col space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">User Account Management</h1>
+          <Button onClick={handlePrint} className="gap-2">
+            <Printer className="h-4 w-4" />
+            Print List
+          </Button>
         </div>
 
         {/* Filter Controls */}
@@ -188,7 +240,7 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-200" ref={tableRef}>
                 <thead className="bg-gray-50">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -229,18 +281,15 @@ export function AdminDashboard() {
                   </tbody>
                 ) : (
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredUsers.map((user, index) =>  (
+                    {filteredUsers.map((user, index) => (
                       <tr key={index}>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div 
-                            className="flex items-center cursor-pointer hover:text-blue-600"
-                            onClick={() => handleUserClick(user)}
-                          >
+                          <div className="flex items-center">
                             <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
                               <Users className="h-5 w-5 text-gray-500" />
                             </div>
                             <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900 hover:underline">
+                              <div className="text-sm font-medium text-gray-900">
                                 {user.name}
                               </div>
                             </div>

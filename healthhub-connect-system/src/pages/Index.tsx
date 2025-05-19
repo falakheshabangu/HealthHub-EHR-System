@@ -8,18 +8,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import pic1 from '../../public/profile(1).png'
-import pic2 from '../../public/profile(2).png'
-import pic3 from '../../public/profile(3).png'
-import pic4 from '../../public/profile(4).png'
-import pic5 from '../../public/profile(5).png'
+import pic1 from '@/profile(1).jpg'
+import pic2 from '@/profile(2).png'
+import pic3 from '@/profile(3).png'
+import pic4 from '@/profile(4).png'
+import pic5 from '@/profile(1).png'
 // Developer data array for easier management
 const developers = [
   { name: "AJ Nhlapho", role: "Fullstack Developer", image: pic2 },
   { name: "FC Shabangu", role: "Backend Developer", image: pic3 },
-  { name: "MATLOU NM", role: "Backend Developer", image: pic4 },
-  { name: "MAKGATO TJ", role: "Frontend Developer", image: pic1 },
-  { name: "NKOSI RAQ", role: "Frontend Developer", image: pic5 },
+  { name: "MATLOU NM", role: "Backend Developer", image: pic1 },
+  { name: "MAKGATO TJ", role: "Frontend Developer", image: pic5 },
+  { name: "NKOSI RAQ", role: "Frontend Developer", image: pic4 },
 ];
 
 const Index = () => {
@@ -46,9 +46,7 @@ const Index = () => {
                 <Link to="/login">
                   <Button className="bg-health-600 hover:bg-health-700">Get Started</Button>
                 </Link>
-                <Link to="/about">
-                  <Button variant="outline">Learn More</Button>
-                </Link>
+                <Button variant="outline" disabled={true}>Click Image To Learn More</Button>
               </div>
             </div>
             <div className="flex justify-center lg:justify-end">
@@ -140,7 +138,7 @@ const Index = () => {
             <div className="flex flex-col items-start gap-4 rounded-lg border p-6 shadow-sm">
               <div className="flex items-center gap-4">
                 <img
-                  src="https://source.unsplash.com/KjFHeSH49Vs"
+                  src="https://plus.unsplash.com/premium_photo-1661580574627-9211124e5c3f?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   width={40}
                   height={40}
                   alt="Dr. Sarah Johnson"
@@ -160,7 +158,7 @@ const Index = () => {
             <div className="flex flex-col items-start gap-4 rounded-lg border p-6 shadow-sm">
               <div className="flex items-center gap-4">
                 <img
-                  src="https://source.unsplash.com/QrEKG7_TGBE"
+                  src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   width={40}
                   height={40}
                   alt="James Wilson"
@@ -180,7 +178,7 @@ const Index = () => {
             <div className="flex flex-col items-start gap-4 rounded-lg border p-6 shadow-sm">
               <div className="flex items-center gap-4">
                 <img
-                  src="https://source.unsplash.com/jgYCXR7MNgk"
+                  src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   width={40}
                   height={40}
                   alt="Dr. Michelle Lee"
@@ -216,9 +214,6 @@ const Index = () => {
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
               <Link to="/login">
                 <Button className="bg-health-600 hover:bg-health-700">Get Started Today</Button>
-              </Link>
-              <Link to="/contact">
-                <Button variant="outline">Contact Sales</Button>
               </Link>
             </div>
           </div>
