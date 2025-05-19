@@ -8,11 +8,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import pic1 from '@/profile(1).jpg'
-import pic2 from '@/profile(2).png'
-import pic3 from '@/profile(3).png'
-import pic4 from '@/profile(4).png'
-import pic5 from '@/profile(1).png'
+import { Facebook, Twitter, Tiktok } from "lucide-react";
+import pic1 from '@/profile(1).jpg';
+import pic2 from '@/profile(2).png';
+import pic3 from '@/profile(3).png';
+import pic4 from '@/profile(4).png';
+import pic5 from '@/profile(1).png';
+
 // Developer data array for easier management
 const developers = [
   { name: "AJ Nhlapho", role: "Fullstack Developer", image: pic2 },
@@ -26,7 +28,7 @@ const Index = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-white to-health-100 dark:from-gray-900 dark:to-gray-800">
         <div className="container px-4 md:px-6">
@@ -138,7 +140,7 @@ const Index = () => {
             <div className="flex flex-col items-start gap-4 rounded-lg border p-6 shadow-sm">
               <div className="flex items-center gap-4">
                 <img
-                  src="https://plus.unsplash.com/premium_photo-1661580574627-9211124e5c3f?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                  src="https://plus.unsplash.com/premium_photo-1661580574627-9211124e5c?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   width={40}
                   height={40}
                   alt="Dr. Sarah Johnson"
@@ -219,6 +221,36 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="mt-auto bg-gray-100 dark:bg-gray-900 py-6">
+        <div className="container mx-auto flex justify-center space-x-6">
+          <a
+            href="https://www.facebook.com/YourPage"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-health-600 transition-colors"
+          >
+            <Facebook size={24} />
+          </a>
+          <a
+            href="https://twitter.com/YourProfile"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-health-600 transition-colors"
+          >
+            <Twitter size={24} />
+          </a>
+          <a
+            href="https://www.tiktok.com/@YourProfile"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-health-600 transition-colors"
+          >
+            <Tiktok size={24} />
+          </a>
+        </div>
+      </footer>
     </div>
   );
 };
