@@ -5,7 +5,7 @@ import { useRole } from '@/contexts/RoleContext';
 
 // Configure axios with base URL
 const api = axios.create({
-  baseURL: 'http://10.5.33.175:5000/api'},
+  baseURL: 'https://healthhub-ehr-system.onrender.com/api'},
 );
 
 // Add interceptor to include auth token in requests
