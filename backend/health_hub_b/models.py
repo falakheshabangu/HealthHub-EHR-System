@@ -2,6 +2,7 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
+import base64
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
@@ -19,6 +20,7 @@ class Admin(db.Model):
     last_login = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
+    phone = db.Column(db.String(10))
     
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -40,9 +42,8 @@ class Admin(db.Model):
 
 class Patient(db.Model):
     __tablename__ = 'patient'
-    
+    login_id = db.Column(db.String(15), unique=True, nullable=False)
     patient_id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(15), unique=True)
     fname = db.Column(db.String(30), nullable=False)
     lname = db.Column(db.String(30), nullable=False)
     id_number = db.Column(db.String(13), unique=True, nullable=False)
@@ -53,9 +54,9 @@ class Patient(db.Model):
     email = db.Column(db.String(100))
     blood_type = db.Column(db.String(3))
     password = db.Column(db.String(255), nullable=False)
-    account_created_date = db.Column(db.Date, default=datetime.utcnow)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime)
+    is_active = db.Column(db.Boolean, default=True)
     
     # Relationships
     responsible_parties = db.relationship('ResponsibleParty', backref='patient', lazy=True)
@@ -69,21 +70,20 @@ class Patient(db.Model):
         super(Patient, self).__init__(**kwargs)
         self.generate_login_id()
         self.generate_patient_id()
-    
+
     def to_dict(self):
         data = {
+            "id": self.login_id,
             "patient_id": self.patient_id,
-            "username": self.username,
             "fname": self.fname,
             "lname":  self.lname,
             "id_number": self.id_number,
             "sex": self.sex,
-            "dateOfBirth": self.date_of_birth,
+            "date_of_birth": self.date_of_birth,
             "address": self.address,
             "phone": self.phone,
             "email": self.email,
             "blood_type": self.blood_type,
-            "account_created_date": self.account_created_date,
             "created_at": self.created_at,
             "account_updated_at": self.updated_at
         }
@@ -126,7 +126,7 @@ class Doctor(db.Model):
     
     doctor_id = db.Column(db.Integer, primary_key=True)
     employee_id = db.Column(db.String(15), unique=True, nullable=False)
-    username = db.Column(db.String(50), unique=True, nullable=False)
+    
     password = db.Column(db.String(255), nullable=False)
     name = db.Column(db.String(50), nullable=False)
     specialty = db.Column(db.String(50))
@@ -144,6 +144,10 @@ class Doctor(db.Model):
     records = db.relationship('PatientRecord', foreign_keys='PatientRecord.recorded_by', 
                             backref='recording_doctor', lazy=True)
     
+    def __init__(self, **kwargs):
+        super(Doctor, self).__init__(**kwargs)
+        self.gen_emp_id()
+    
     def to_dict(self):
         return {
             "doctor_id": self.doctor_id,
@@ -158,6 +162,9 @@ class Doctor(db.Model):
             "created_at": self.created_at,
             "is_active": self.is_active
         }
+    
+    def gen_emp_id(self):
+        self.employee_id = 'D' +str(self.username)
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -226,7 +233,7 @@ class Appointment(db.Model):
         }
 
 class PatientTreatment(db.Model):
-    __tablename__ = 'patient_treatment'
+    __tablename__ = 'patienttreatment'
     
     treat_id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey('patient.patient_id'), nullable=False)
@@ -237,12 +244,22 @@ class PatientTreatment(db.Model):
     follow_up_date = db.Column(db.Date)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    def to_dict(self):
+        return {
+            "treat_id": self.treat_id,
+            "date": self.treatment_date,
+            "description": self.treat_description,
+            "diagnosis": self.diagnosis,
+            "follow_up_date": self.follow_up_date,
+        }
+
+
 class PatientRecord(db.Model):
     __tablename__ = 'patientrecord'
     
     record_id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey('patient.patient_id'), nullable=False)
-    treat_id = db.Column(db.Integer, db.ForeignKey('patient_treatment.treat_id'))
+    treat_id = db.Column(db.Integer, db.ForeignKey('patienttreatment.treat_id'))
     record_type = db.Column(db.String(20), nullable=False)
     description = db.Column(db.String(100), nullable=False)
     details = db.Column(db.Text)
@@ -257,15 +274,18 @@ class PatientRecord(db.Model):
 
     def to_dict(self):
         return {
-            "record_id": self.record_id,
+            "patient_record_id": db.session.query(Patient).filter_by(patient_id=self.patient_id).first().login_id,
             "patient_id": self.patient_id,
+            "record_id": self.record_id,
             "treat_id": self.treat_id,
-            "record_type": self.record_type,
+            "name": db.session.query(Patient).filter_by(patient_id=self.patient_id).first().fname,
+            "surname": db.session.query(Patient).filter_by(patient_id=self.patient_id).first().lname,
+            "type": self.record_type,
             "description": self.description,
             "details": self.details,
-            "date_of_event": self.date_of_event,
-            "recorded_by": self.recorded_by,
-            "created_at": self.created_at
+            "date": self.date_of_event,
+            "doctor": db.session.query(Doctor).filter_by(doctor_id=self.recorded_by).first().name,
+            "treatment": None,
         }
 
 class PatientAllergy(db.Model):
@@ -308,6 +328,45 @@ class Prescription(db.Model):
         db.CheckConstraint("status IN ('Pending', 'Filled', 'Cancelled', 'Expired')", 
                          name="valid_status"),
     )
+
+
+    def to_dict(self):
+        return {
+            "id": self.prescription_id,
+            "code": self.pres_code,
+            "medication": self.medication,
+            "dosage": self.dosage,
+            "patient": db.session.query(Patient).filter_by(patient_id=self.patient_id).first().fname + " " + db.session.query(Patient).filter_by(patient_id=self.patient_id).first().lname,
+            "doctor": db.session.query(Doctor).filter_by(doctor_id=self.doctor_id).first().name,
+            "pharmacist": db.session.query(Pharmacist).filter_by(pharmacist_id=self.pharmacist_id).first().name,
+            "prescription_date": self.date_prescribed,
+            "status": self.status,
+            "instruction": self.instructions,
+            "date_filled": self.date_filled,
+            "refills_remaining": self.refills_remaining,
+            "date_prescribed": self.date_prescribed
+        }
+
+class Medication(db.Model):
+    __tablename__ = 'medication'
+    
+    medication_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    ingredients = db.Column(db.String(100))
+    in_stock = db.Column(db.Integer, nullable=False, default=0)
+    
+    def to_dict(self):
+        return {
+            "medication_id": self.medication_id,
+            "name": self.name,
+            "ingredients": self.ingredients,
+            "in_stock": self.in_stock
+        }
+
+    __table_args__ = (
+        db.UniqueConstraint('name', name='unique_medication'),
+    )
+
 
 class AuditLog(db.Model):
     __tablename__ = 'audit_log'

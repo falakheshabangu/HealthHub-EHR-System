@@ -3,11 +3,11 @@ from flask_cors import CORS
 from .models import db
 
 
-DATABASE_URI = 'postgresql://group_x:rRUyc2XAJG2j2uJR6f9BWQhjOT2ltte2@dpg-cvgkusqn91rc73bdrurg-a.oregon-postgres.render.com/test_database'
+DATABASE_URI = 'postgresql://postgres:jayastro@localhost:5432/health_hubdb' #'postgresql://group_x:ticNmQjd53cj4CHlLttf3uN7omlSjhQj@dpg-d090d015pdvs739vhjjg-a.oregon-postgres.render.com/hhdb_evak'
 
 def create_app():
     app = Flask(__name__)
-    CORS(app, origins=["http://localhost:3000"])
+    CORS(app, origins=["*"])
 
     #APP CONFIG
     app.config['SECRET_KEY'] = 'fun-dev@health_hub(2025)'
