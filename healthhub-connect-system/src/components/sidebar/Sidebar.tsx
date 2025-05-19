@@ -38,99 +38,114 @@ export function Sidebar({ role = "admin" }: SidebarProps) {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const commonNavItems = [
-    {
-      to: "/dashboard",
-      icon: <BarChart className="h-5 w-5" />,
-      label: "Dashboard",
-    },
-  ];
+  // Prefix routes with the role
+  const getRoutePath = (path: string) => `/${role}${path}`;
 
   const roleNavItems = {
     admin: [
       {
-        to: "/patients",
+        to: getRoutePath("/dashboard"),
+        icon: <BarChart className="h-5 w-5" />,
+        label: "Dashboard",
+      },
+      {
+        to: getRoutePath("/patients"),
         icon: <UserRound className="h-5 w-5" />,
         label: "Patients",
       },
       {
-        to: "/appointments",
+        to: getRoutePath("/appointments"),
         icon: <Calendar className="h-5 w-5" />,
         label: "Appointments",
       },
       {
-        to: "/medical-records",
+        to: getRoutePath("/medical-records"),
         icon: <FileText className="h-5 w-5" />,
         label: "Medical Records",
       },
       {
-        to: "/prescriptions",
+        to: getRoutePath("/prescriptions"),
         icon: <PlusSquare className="h-5 w-5" />,
         label: "Prescriptions",
       },
       {
-        to: "/users",
+        to: getRoutePath("/users"),
         icon: <Users className="h-5 w-5" />,
         label: "User Management",
       },
     ],
     doctor: [
       {
-        to: "/patients",
+        to: getRoutePath("/dashboard"),
+        icon: <BarChart className="h-5 w-5" />,
+        label: "Dashboard",
+      },
+      {
+        to: getRoutePath("/patients"),
         icon: <UserRound className="h-5 w-5" />,
         label: "Patients",
       },
       {
-        to: "/appointments",
+        to: getRoutePath("/appointments"),
         icon: <Calendar className="h-5 w-5" />,
         label: "Appointments",
       },
       {
-        to: "/medical-records",
+        to: getRoutePath("/medical-records"),
         icon: <FileText className="h-5 w-5" />,
         label: "Medical Records",
       },
       {
-        to: "/prescriptions",
+        to: getRoutePath("/prescriptions"),
         icon: <PlusSquare className="h-5 w-5" />,
         label: "Prescriptions",
       },
     ],
     pharmacist: [
       {
-        to: "/prescriptions",
+        to: getRoutePath("/dashboard"),
+        icon: <BarChart className="h-5 w-5" />,
+        label: "Dashboard",
+      },
+      {
+        to: getRoutePath("/prescriptions"),
         icon: <Pill className="h-5 w-5" />,
         label: "Prescriptions",
       },
       {
-        to: "/inventory",
+        to: getRoutePath("/inventory"),
         icon: <Pill className="h-5 w-5" />,
         label: "Inventory",
       },
       {
-        to: "/patients",
+        to: getRoutePath("/patients"),
         icon: <UserRound className="h-5 w-5" />,
         label: "Patients",
       },
       {
-        to: "/consultations",
+        to: getRoutePath("/consultations"),
         icon: <Calendar className="h-5 w-5" />,
         label: "Consultations",
       },
     ],
     patient: [
       {
-        to: "/appointments",
+        to: getRoutePath("/dashboard"),
+        icon: <BarChart className="h-5 w-5" />,
+        label: "Dashboard",
+      },
+      {
+        to: getRoutePath("/appointments"),
         icon: <Calendar className="h-5 w-5" />,
         label: "My Appointments",
       },
       {
-        to: "/medical-records",
+        to: getRoutePath("/medical-records"),
         icon: <FileText className="h-5 w-5" />,
         label: "My Records",
       },
       {
-        to: "/prescriptions",
+        to: getRoutePath("/prescriptions"),
         icon: <PlusSquare className="h-5 w-5" />,
         label: "My Prescriptions",
       },
@@ -139,7 +154,7 @@ export function Sidebar({ role = "admin" }: SidebarProps) {
 
   const bottomNavItems = [
     {
-      to: "/settings",
+      to: getRoutePath("/settings"),
       icon: <Settings className="h-5 w-5" />,
       label: "Settings",
     },
@@ -150,7 +165,7 @@ export function Sidebar({ role = "admin" }: SidebarProps) {
     },
   ];
 
-  const navItems = [...commonNavItems, ...roleNavItems[role]];
+  const navItems = roleNavItems[role];
 
   return (
     <ShadcnSidebar>

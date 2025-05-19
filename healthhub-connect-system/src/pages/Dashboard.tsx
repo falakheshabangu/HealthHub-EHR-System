@@ -4,6 +4,7 @@ import { AdminDashboard } from "@/components/dashboard/AdminDashboard";
 import { DoctorDashboard } from "@/components/dashboard/DoctorDashboard";
 import { PharmacistDashboard } from "@/components/dashboard/PharmacistDashboard";
 import { PatientDashboard } from "@/components/dashboard/PatientDashboard";
+import { Navigate } from "react-router-dom";
 
 const Dashboard = () => {
   const { role } = useRole();
@@ -19,7 +20,8 @@ const Dashboard = () => {
     case "patient":
       return <PatientDashboard />;
     default:
-      return <AdminDashboard />; // Default to admin dashboard
+      // If role is not valid, redirect to login
+      return <Navigate to="/login" replace />;
   }
 };
 

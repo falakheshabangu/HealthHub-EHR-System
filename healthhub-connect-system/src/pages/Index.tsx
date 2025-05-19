@@ -31,8 +31,8 @@ const Index = () => {
             </div>
             <div className="flex justify-center lg:justify-end">
               <img
-                src="https://source.unsplash.com/UfV_X5rTFjg"
-                alt="Healthcare professionals"
+                src="https://www.myamericannurse.com/wp-content/uploads/2022/11/shutterstock_1101930905_EHRExperience-scaled.jpg"
+                alt="Healthcare splash image"
                 className="rounded-lg object-cover shadow-lg"
                 width={550}
                 height={400}

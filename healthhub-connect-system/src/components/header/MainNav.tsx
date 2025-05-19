@@ -9,12 +9,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Menu } from "lucide-react";
+import { useRole } from "@/contexts/RoleContext";
 
 interface MainNavProps {
   className?: string;
 }
 
 export function MainNav({ className }: MainNavProps) {
+  const { role } = useRole();
+  
+  // Generate role-based routes
+  const getRoutePath = (path: string) => `/${role}${path}`;
+  
   return (
     <div className={cn("flex items-center", className)}>
       <div className="hidden md:flex">
@@ -25,31 +31,41 @@ export function MainNav({ className }: MainNavProps) {
         </Link>
         <nav className="flex items-center space-x-6 text-sm font-medium">
           <Link
-            to="/dashboard"
+            to={getRoutePath("/dashboard")}
             className="transition-colors hover:text-primary"
           >
             Dashboard
           </Link>
+          
+          {(role === "admin" || role === "doctor" || role === "pharmacist") && (
+            <Link
+              to={getRoutePath("/patients")}
+              className="transition-colors hover:text-primary"
+            >
+              Patients
+            </Link>
+          )}
+          
+          {(role === "admin" || role === "doctor" || role === "patient") && (
+            <Link
+              to={getRoutePath("/appointments")}
+              className="transition-colors hover:text-primary"
+            >
+              Appointments
+            </Link>
+          )}
+          
+          {(role === "admin" || role === "doctor" || role === "patient") && (
+            <Link
+              to={getRoutePath("/medical-records")}
+              className="transition-colors hover:text-primary"
+            >
+              Medical Records
+            </Link>
+          )}
+          
           <Link
-            to="/patients"
-            className="transition-colors hover:text-primary"
-          >
-            Patients
-          </Link>
-          <Link
-            to="/appointments"
-            className="transition-colors hover:text-primary"
-          >
-            Appointments
-          </Link>
-          <Link
-            to="/medical-records"
-            className="transition-colors hover:text-primary"
-          >
-            Medical Records
-          </Link>
-          <Link
-            to="/prescriptions"
+            to={getRoutePath("/prescriptions")}
             className="transition-colors hover:text-primary"
           >
             Prescriptions
@@ -69,19 +85,29 @@ export function MainNav({ className }: MainNavProps) {
             className="w-[180px]"
           >
             <DropdownMenuItem asChild>
-              <Link to="/dashboard">Dashboard</Link>
+              <Link to={getRoutePath("/dashboard")}>Dashboard</Link>
             </DropdownMenuItem>
+            
+            {(role === "admin" || role === "doctor" || role === "pharmacist") && (
+              <DropdownMenuItem asChild>
+                <Link to={getRoutePath("/patients")}>Patients</Link>
+              </DropdownMenuItem>
+            )}
+            
+            {(role === "admin" || role === "doctor" || role === "patient") && (
+              <DropdownMenuItem asChild>
+                <Link to={getRoutePath("/appointments")}>Appointments</Link>
+              </DropdownMenuItem>
+            )}
+            
+            {(role === "admin" || role === "doctor" || role === "patient") && (
+              <DropdownMenuItem asChild>
+                <Link to={getRoutePath("/medical-records")}>Medical Records</Link>
+              </DropdownMenuItem>
+            )}
+            
             <DropdownMenuItem asChild>
-              <Link to="/patients">Patients</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/appointments">Appointments</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/medical-records">Medical Records</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/prescriptions">Prescriptions</Link>
+              <Link to={getRoutePath("/prescriptions")}>Prescriptions</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -1,9 +1,11 @@
-
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Calendar, Clock, PlusSquare, FileText, Activity } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { getAppointments, Appointment } from "@/api/patientApi";
+import { useToast } from "@/hooks/use-toast";
 
 // Sample health metrics data
 const healthData = [
@@ -13,24 +15,6 @@ const healthData = [
   { month: "Apr", weight: 158, bloodPressure: 116 },
   { month: "May", weight: 157, bloodPressure: 115 },
   { month: "Jun", weight: 157, bloodPressure: 114 },
-];
-
-// Sample upcoming appointments
-const upcomingAppointments = [
-  {
-    id: 1,
-    doctorName: "Dr. Anderson",
-    time: "10:00 AM",
-    date: "May 25, 2025",
-    type: "Annual Checkup",
-  },
-  {
-    id: 2,
-    doctorName: "Dr. Williams",
-    time: "2:30 PM",
-    date: "June 10, 2025",
-    type: "Follow-up",
-  },
 ];
 
 // Sample medications
@@ -82,6 +66,43 @@ const recentRecords = [
 
 export function PatientDashboard() {
   const patientName = "John Doe"; // Would come from user context in a real app
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      setLoading(true);
+      try {
+        const data = await getAppointments();
+        setAppointments(data);
+      } catch (error) {
+        console.error("Failed to fetch appointments:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load your appointments",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAppointments();
+  }, [toast]);
+
+  // Function to format appointments for display
+  const formatAppointmentsForDisplay = () => {
+    return appointments.map((appointment, index) => ({
+      id: index + 1,
+      doctorName: appointment.doctor_name,
+      time: new Date(appointment.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      date: new Date(appointment.start_time).toLocaleDateString([], { year: 'numeric', month: 'long', day: '2-digit' }),
+      type: appointment.type,
+    }));
+  };
+
+  const upcomingAppointments = formatAppointmentsForDisplay();
 
   return (
     <div className="container py-8">
@@ -111,9 +132,11 @@ export function PatientDashboard() {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">2</div>
+              <div className="text-2xl font-bold">{appointments.length}</div>
               <p className="text-xs text-muted-foreground">
-                Next on May 25, 2025
+                {appointments.length > 0 
+                  ? `Next on ${new Date(appointments[0].start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) } ${new Date(appointments[0].start_time).toLocaleDateString()}` 
+                  : "No upcoming appointments"}
               </p>
             </CardContent>
           </Card>
@@ -212,42 +235,48 @@ export function PatientDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {upcomingAppointments.map((appointment) => (
-                  <div
-                    key={appointment.id}
-                    className="flex items-center space-x-4 rounded-md border p-3"
-                  >
-                    <div className="flex-1 space-y-1">
-                      <p className="font-medium">{appointment.doctorName}</p>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Clock className="mr-1 h-3 w-3" />
-                        <span>{appointment.time}</span>
-                        <span className="mx-1">•</span>
-                        <span>{appointment.date}</span>
+                {loading ? (
+                  <p className="text-center py-4">Loading your appointments...</p>
+                ) : upcomingAppointments.length > 0 ? (
+                  upcomingAppointments.map((appointment) => (
+                    <div
+                      key={appointment.id}
+                      className="flex items-center space-x-4 rounded-md border p-3"
+                    >
+                      <div className="flex-1 space-y-1">
+                        <p className="font-medium">{appointment.doctorName}</p>
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <Clock className="mr-1 h-3 w-3" />
+                          <span>{appointment.time}</span>
+                          <span className="mx-1">•</span>
+                          <span>{appointment.date}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {appointment.type}
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {appointment.type}
-                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-shrink-0"
+                        >
+                          Reschedule
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          asChild
+                          className="flex-shrink-0"
+                        >
+                          <Link to={`/appointments/${appointment.id}`}>Details</Link>
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-shrink-0"
-                      >
-                        Reschedule
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        asChild
-                        className="flex-shrink-0"
-                      >
-                        <Link to={`/appointments/${appointment.id}`}>Details</Link>
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-center py-4">No upcoming appointments found</p>
+                )}
                 <div className="flex justify-center">
                   <Button variant="outline" asChild>
                     <Link to="/appointments/new">Schedule New Appointment</Link>
