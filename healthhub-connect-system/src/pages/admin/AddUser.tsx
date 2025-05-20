@@ -110,13 +110,13 @@ export default function AddUserPage() {
         default:
           throw new Error("Please select a role");
       }
-
       await addUserAccount(formData);
       toast({
         title: "Success",
         description: `${selectedRole} account created successfully`,
       });
-      navigate("/admin/users");
+      setSelectedRole("")
+      navigate("/admin/add-user");
     } catch (error) {
       toast({
         title: "Error",
@@ -125,13 +125,14 @@ export default function AddUserPage() {
       });
     } finally {
       setIsSubmitting(false);
+      setSelectedRole("")
     }
   };
 
   return (
     <div className="container py-8">
       <div className="max-w-4xl mx-auto">
-        <Button variant="outline" onClick={() => navigate("/admin/users")} className="mb-6">
+        <Button variant="outline" onClick={() => navigate("/admin/dashboard")} className="mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Users
         </Button>

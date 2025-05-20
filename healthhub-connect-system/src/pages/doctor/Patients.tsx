@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Table,
@@ -34,111 +33,48 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BadgeCheck, Filter, MoreHorizontal, PlusCircle, Search } from "lucide-react";
+import { BadgeCheck, Filter, MoreHorizontal, PlusCircle, Search, Printer } from "lucide-react";
+import { getPatients } from '@/api/patientApi'
 
-// Sample patient data
-const patientsData = [
-  {
-    id: "P001",
-    name: "John Smith",
-    age: 45,
-    gender: "Male",
-    lastVisit: "2025-04-10",
-    phone: "(555) 123-4567",
-    status: "Active",
-  },
-  {
-    id: "P002",
-    name: "Sarah Johnson",
-    age: 32,
-    gender: "Female",
-    lastVisit: "2025-04-12",
-    phone: "(555) 234-5678",
-    status: "Active",
-  },
-  {
-    id: "P003",
-    name: "Robert Wilson",
-    age: 58,
-    gender: "Male",
-    lastVisit: "2025-04-05",
-    phone: "(555) 345-6789",
-    status: "Inactive",
-  },
-  {
-    id: "P004",
-    name: "Emily Davis",
-    age: 29,
-    gender: "Female",
-    lastVisit: "2025-04-08",
-    phone: "(555) 456-7890",
-    status: "Active",
-  },
-  {
-    id: "P005",
-    name: "Michael Brown",
-    age: 42,
-    gender: "Male",
-    lastVisit: "2025-04-01",
-    phone: "(555) 567-8901",
-    status: "Active",
-  },
-  {
-    id: "P006",
-    name: "Jennifer Lee",
-    age: 37,
-    gender: "Female",
-    lastVisit: "2025-04-09",
-    phone: "(555) 678-9012",
-    status: "Active",
-  },
-  {
-    id: "P007",
-    name: "David Martinez",
-    age: 51,
-    gender: "Male",
-    lastVisit: "2025-03-28",
-    phone: "(555) 789-0123",
-    status: "Inactive",
-  },
-  {
-    id: "P008",
-    name: "Lisa Anderson",
-    age: 34,
-    gender: "Female",
-    lastVisit: "2025-04-07",
-    phone: "(555) 890-1234",
-    status: "Active",
-  },
-  {
-    id: "P009",
-    name: "James Taylor",
-    age: 47,
-    gender: "Male",
-    lastVisit: "2025-04-03",
-    phone: "(555) 901-2345",
-    status: "Active",
-  },
-  {
-    id: "P010",
-    name: "Patricia White",
-    age: 63,
-    gender: "Female",
-    lastVisit: "2025-03-25",
-    phone: "(555) 012-3456",
-    status: "Inactive",
-  },
-];
+interface Patient {
+  id: string;
+  name: string;
+  age: number;
+  gender: string;
+  lastVisit: string;
+  phone: string;
+  status: string;
+}
 
 const Patients = () => {
+  const [patientsData, setPatientsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const patientsPerPage = 8;
 
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        // Replace with your actual API endpoint
+        const patients = await getPatients()
+        setPatientsData(patients);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPatients();
+  }, []);
+
   // Filter patients based on search term
   const filteredPatients = patientsData.filter(
     (patient) =>
-      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.fname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.fname.toLowerCase().includes(searchTerm.toLowerCase())||
       patient.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       patient.phone.includes(searchTerm)
   );
@@ -154,17 +90,95 @@ const Patients = () => {
   // Change page
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
+  // Print functionality
+  const handlePrint = () => {
+    const printWindow = window.open('', '', 'width=800,height=600');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Patient List</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              h1 { color: #333; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background-color: #f2f2f2; }
+              .status-active { background-color: #e6ffe6; }
+              .status-inactive { background-color: #ffe6e6; }
+            </style>
+          </head>
+          <body>
+            <h1>Patient List</h1>
+            <p>Total patients: ${filteredPatients.length}</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Patient ID</th>
+                  <th>Name</th>
+                  <th>Date of birth</th>
+                  <th>Gender</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${filteredPatients.map(patient => `
+                  <tr>
+                    <td>${patient.id}</td>
+                    <td>${patient.fname || ' ' || patient.lname}</td>
+                    <td>${patient.date_of_birth}</td>
+                    <td>${patient.gender}</td>
+                    <td>${patient.email}</td>
+                    <td>${patient.phone}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+            <script>
+              setTimeout(() => {
+                window.print();
+                window.close();
+              }, 200);
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container py-8">
+        <div className="flex justify-center items-center h-64">
+          <p>Loading patients...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container py-8">
+        <div className="flex justify-center items-center h-64">
+          <p className="text-red-500">Error: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container py-8">
       <div className="flex flex-col space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Patients</h1>
-          <Button asChild>
-            <Link to="/patients/new">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add New Patient
-            </Link>
-          </Button>
+          <div className="flex space-x-2">
+            <Button variant="outline" onClick={handlePrint}>
+              <Printer className="mr-2 h-4 w-4" />
+              Print List
+            </Button>
+          </div>
         </div>
 
         <Card>
@@ -198,11 +212,10 @@ const Patients = () => {
                   <TableRow>
                     <TableHead>Patient ID</TableHead>
                     <TableHead>Name</TableHead>
-                    <TableHead>Age</TableHead>
+                    <TableHead>Date of birth</TableHead>
                     <TableHead>Gender</TableHead>
-                    <TableHead>Last Visit</TableHead>
+                    <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>
-                    <TableHead>Status</TableHead>
                     <TableHead className="w-[80px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -214,32 +227,13 @@ const Patients = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center">
-                          <Link
-                            to={`/patients/${patient.id}`}
-                            className="hover:underline font-medium text-health-700 dark:text-health-400"
-                          >
-                            {patient.name}
-                          </Link>
-                          {patient.status === "Active" && (
-                            <BadgeCheck className="h-4 w-4 ml-1 text-green-500" />
-                          )}
+                            {patient.fname  + ' ' + patient.lname}
                         </div>
                       </TableCell>
-                      <TableCell>{patient.age}</TableCell>
-                      <TableCell>{patient.gender}</TableCell>
-                      <TableCell>{patient.lastVisit}</TableCell>
+                      <TableCell>{patient.date_of_birth}</TableCell>
+                      <TableCell>{patient.sex}</TableCell>
+                      <TableCell>{patient.email}</TableCell>
                       <TableCell>{patient.phone}</TableCell>
-                      <TableCell>
-                        <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            patient.status === "Active"
-                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                              : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
-                          }`}
-                        >
-                          {patient.status}
-                        </span>
-                      </TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -269,11 +263,6 @@ const Patients = () => {
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild>
-                              <Link to={`/appointments/new?patient=${patient.id}`}>
-                                Schedule Appointment
-                              </Link>
-                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

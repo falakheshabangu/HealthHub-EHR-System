@@ -38,7 +38,11 @@ export default function DeleteUserPage() {
   const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
-      const fetchUsers = async () => {
+      
+      fetchUsers();
+    },[userId, toast]);
+
+    const fetchUsers = async () => {
         try {
           const response = await getUserAccounts();
           setUsers(response);
@@ -53,10 +57,8 @@ export default function DeleteUserPage() {
         } finally {
           setLoading(false);
         }
-      };
+    };
   
-      fetchUsers();
-    },[userId, navigate]);
 
     const filteredUsers = users.filter(user => {
       const matchesSearch = 
@@ -95,7 +97,9 @@ export default function DeleteUserPage() {
         variant: "destructive",
       });
     } finally {
+      setIsModalOpen(false)
       setDeleting(false);
+      fetchUsers();
     }
   };
 

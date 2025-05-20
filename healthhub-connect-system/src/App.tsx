@@ -27,7 +27,8 @@ const queryClient = new QueryClient();
 // Protected route component that checks user role
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { role } = useRole();
-  
+  const access_token = localStorage.getItem("access_token")
+
   useEffect(() => {
     // Check if the role is set in localStorage and update context if necessary
     const storedRole = localStorage.getItem("user_role");
@@ -40,8 +41,12 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     }
   }, [role])
 
-  if (!role || !allowedRoles.includes(role)) {
-    return <Navigate to="/login" replace />;
+  if (role && access_token && !allowedRoles.includes(role)) {
+    return <Navigate to={`/${role}/dashboard`} replace />;
+  }
+
+  if (!role || !access_token){
+    return <Navigate to={`/login`} replace />;
   }
   
   return children;

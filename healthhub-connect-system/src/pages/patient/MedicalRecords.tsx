@@ -399,9 +399,9 @@ const MedicalRecords = () => {
                     </TableHeader>
                     <TableBody>
                       {currentRecords.length > 0 ? (
-                        currentRecords.map((record) => (
+                        currentRecords.map((record, index) => (
                           <TableRow 
-                            key={record.id}
+                            key={index}
                             className="cursor-pointer hover:bg-gray-50 print:hover:bg-white"
                           >  
                             <TableCell>
