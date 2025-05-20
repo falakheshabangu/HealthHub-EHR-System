@@ -5,7 +5,7 @@ import { useRole } from '@/contexts/RoleContext';
 
 // Configure axios with base URL
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: 'https://group-x-project.onrender.com/api',
 });
 
 // Add interceptor to include auth token in requests
