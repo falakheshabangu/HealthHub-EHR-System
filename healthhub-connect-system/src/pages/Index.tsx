@@ -8,7 +8,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Facebook, Twitter, Tiktok } from "lucide-react";
+import { Facebook, Twitter} from "lucide-react";
+import { FaTiktok } from "react-icons/fa";
 import pic1 from '@/profile(1).jpg';
 import pic2 from '@/profile(2).png';
 import pic3 from '@/profile(3).png';
