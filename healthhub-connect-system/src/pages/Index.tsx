@@ -9,7 +9,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Facebook, Twitter} from "lucide-react";
-import { FaTiktok } from "react-icons/fa";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTiktok } from '@fortawesome/free-brands-svg-icons';
+
 import pic1 from '@/profile(1).jpg';
 import pic2 from '@/profile(2).png';
 import pic3 from '@/profile(3).png';
@@ -248,7 +250,7 @@ const Index = () => {
             rel="noopener noreferrer"
             className="hover:text-health-600 transition-colors"
           >
-            <Tiktok size={24} />
+            <FontAwesomeIcon icon={faTiktok} />
           </a>
         </div>
       </footer>
