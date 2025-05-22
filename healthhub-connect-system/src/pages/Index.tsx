@@ -224,7 +224,7 @@ const Index = () => {
       <footer className="mt-auto bg-gray-100 dark:bg-gray-900 py-6">
         <div className="container mx-auto flex justify-center space-x-6">
           <a
-            href="https://www.facebook.com/share/1CiznDvGYU/?mibextid=wwXIfr"
+            href="https://www.facebook.com/share/18kiZwf99E/?mibextid=wwXIfr"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-health-600 transition-colors"
