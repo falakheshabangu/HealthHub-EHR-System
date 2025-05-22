@@ -8,17 +8,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Facebook, Twitter} from "lucide-react";
+import { Facebook, Twitter } from "lucide-react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTiktok } from '@fortawesome/free-brands-svg-icons';
 
 import pic1 from '@/profile(1).jpg';
 import pic2 from '@/profile(2).png';
 import pic3 from '@/profile(3).png';
-import pic4 from '@/profile(4).png';
+import pic4 from '@/profile(5).png';
 import pic5 from '@/profile(1).png';
 
-// Developer data array for easier management
 const developers = [
   { name: "AJ Nhlapho", role: "Fullstack Developer", image: pic2 },
   { name: "FC Shabangu", role: "Backend Developer", image: pic3 },
@@ -32,7 +31,6 @@ const Index = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Section */}
       <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-white to-health-100 dark:from-gray-900 dark:to-gray-800">
         <div className="container px-4 md:px-6">
           <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
@@ -123,7 +121,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Rest of your existing sections (Features, Testimonials, CTA) */}
       <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-t from-white to-health-100 dark:from-gray-900 dark:to-gray-800">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
@@ -140,8 +137,8 @@ const Index = () => {
             </div>
           </div>
           <div className="mx-auto grid max-w-sm items-start gap-6 py-12 md:max-w-4xl md:grid-cols-2 lg:max-w-5xl lg:grid-cols-3">
-            <div className="flex flex-col items-start gap-4 rounded-lg border p-6 shadow-sm">
-              <div className="flex items-center gap-4">
+            <div className="h-full flex flex-col items-start gap-4 rounded-lg border p-6 shadow-sm">
+              <div className="flex items-center gap-4 w-full">
                 <img
                   src="https://plus.unsplash.com/premium_photo-1661580574627-9211124e5c?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   width={40}
@@ -156,12 +153,12 @@ const Index = () => {
                   </p>
                 </div>
               </div>
-              <p className="text-gray-500 dark:text-gray-400">
+              <p className="text-gray-500 dark:text-gray-400 flex-1">
                 "HealthHub has completely transformed my practice. The intuitive interface and comprehensive record management make patient care more efficient and accurate."
               </p>
             </div>
-            <div className="flex flex-col items-start gap-4 rounded-lg border p-6 shadow-sm">
-              <div className="flex items-center gap-4">
+            <div className="h-full flex flex-col items-start gap-4 rounded-lg border p-6 shadow-sm">
+              <div className="flex items-center gap-4 w-full">
                 <img
                   src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   width={40}
@@ -176,12 +173,12 @@ const Index = () => {
                   </p>
                 </div>
               </div>
-              <p className="text-gray-500 dark:text-gray-400">
+              <p className="text-gray-500 dark:text-gray-400 flex-1">
                 "The administrative features in HealthHub have streamlined our operations significantly. User management and reporting tools are particularly valuable for our multi-department setup."
               </p>
             </div>
-            <div className="flex flex-col items-start gap-4 rounded-lg border p-6 shadow-sm">
-              <div className="flex items-center gap-4">
+            <div className="h-full flex flex-col items-start gap-4 rounded-lg border p-6 shadow-sm">
+              <div className="flex items-center gap-4 w-full">
                 <img
                   src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   width={40}
@@ -196,7 +193,7 @@ const Index = () => {
                   </p>
                 </div>
               </div>
-              <p className="text-gray-500 dark:text-gray-400">
+              <p className="text-gray-500 dark:text-gray-400 flex-1">
                 "As a specialist, I need detailed patient histories and test results. HealthHub delivers with comprehensive records and an excellent referral system that ensures continuity of care."
               </p>
             </div>
@@ -204,7 +201,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="w-full py-12 md:py-24 lg:py-32 border-t">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
@@ -225,11 +221,10 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="mt-auto bg-gray-100 dark:bg-gray-900 py-6">
         <div className="container mx-auto flex justify-center space-x-6">
           <a
-            href="https://www.facebook.com/YourPage"
+            href="https://www.facebook.com/share/1CiznDvGYU/?mibextid=wwXIfr"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-health-600 transition-colors"
@@ -237,7 +232,7 @@ const Index = () => {
             <Facebook size={24} />
           </a>
           <a
-            href="https://twitter.com/YourProfile"
+            href="https://x.com/HealthHub_Conn"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-health-600 transition-colors"
@@ -245,12 +240,15 @@ const Index = () => {
             <Twitter size={24} />
           </a>
           <a
-            href="https://www.tiktok.com/@YourProfile"
+            href="https://www.tiktok.com/@healthhub_connect"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-health-600 transition-colors"
           >
-            <FontAwesomeIcon icon={faTiktok} />
+            <FontAwesomeIcon 
+              icon={faTiktok} 
+              style={{ width: 24, height: 24 }}
+            />
           </a>
         </div>
       </footer>
